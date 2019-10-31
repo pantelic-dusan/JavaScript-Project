@@ -1,0 +1,83 @@
+@font-face {
+    font-family: Minecraft;
+    src: url(fonts/Minecraft.ttf);
+}
+
+html {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 10% 80% 5%;
+    background: linear-gradient(to top, #000000, #434343);
+    color: #F2F2F2;
+    font-family: 'Minecraft';
+}
+
+header {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-size: 100%;
+    text-align: center;
+}
+
+main {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 30% 40% 30%;
+}
+
+footer {
+    width: 100%;
+    text-align: center;
+    font-size: 60%;
+    letter-spacing: 2px;
+    position: absolute;
+    bottom: 0;
+}
+
+fieldset {
+    border: 1px solid #F2F2F2;
+}
+
+legend {
+    font-size: 80%;
+    letter-spacing: 3px;
+}
+
+.left-box {
+    padding-left: 20%;
+    padding-right: 5%;
+    display: grid;
+    grid-template-rows: 30% 60%;
+    grid-gap: 10%;
+}
+
+.middle-box {
+    padding-left: 2%;
+    padding-right: 2%;
+    display: grid;
+}
+
+.right-box {
+    padding-left: 5%;
+    padding-right: 20%;
+    display: grid;
+    grid-template-rows: 30% 60%;
+    grid-gap: 10%;
+}
+
+.invisible {
+    display: none;
+}
