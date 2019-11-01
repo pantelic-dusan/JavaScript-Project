@@ -3,6 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <title>Tetris</title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css">
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
@@ -27,8 +28,11 @@
         <!-- Middle part of body -->
         <div class='middle-box'>
             <!-- Main game contaier -->
-            <fieldset class='game-container'>
+            <fieldset id='game-container' class='game-container'>
                 <legend>GAME</legend>
+                <div id='game-board'>
+
+                </div>
             </fieldset>
         </div>
 
@@ -50,6 +54,6 @@
         <p class="copyright">© 2019 DUSAN PANTELIC</p>
     </footer>
 
-    <script src="scripts.js"></script> 
+    <script type='application/javascript' src="script.js"></script> 
 </body>
 </html>

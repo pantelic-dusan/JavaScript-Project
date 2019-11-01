@@ -65,8 +65,8 @@ legend {
 }
 
 .middle-box {
-    padding-left: 2%;
-    padding-right: 2%;
+    padding-left: 2.5%;
+    padding-right: 2.5%;
     display: grid;
 }
 
@@ -78,6 +78,19 @@ legend {
     grid-gap: 10%;
 }
 
+.game-container {
+    align-content: center;
+}
+
+#game-board {
+    display: grid;
+    grid-auto-flow: column;
+    width: 300px;
+    padding: 0;
+    margin: auto;
+}
+
 .invisible {
     display: none;
 }
+
