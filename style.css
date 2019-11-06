@@ -78,14 +78,24 @@ legend {
     grid-gap: 10%;
 }
 
-.game-container {
+.game-board-container {
+    align-content: center;
+}
+
+.piece-board-container {
     align-content: center;
 }
 
 #game-board {
     display: grid;
     grid-auto-flow: column;
-    width: 300px;
+    padding: 0;
+    margin: auto;
+}
+
+#piece-board {
+    display: grid;
+    grid-auto-flow: column;
     padding: 0;
     margin: auto;
 }
