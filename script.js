@@ -25,7 +25,7 @@ Piece.prototype.generatePiece = function(pieceMatrix) {
     this.pieceMatrix = pieceMatrix;
 }
 
-Piece.prototype.movePiece = function() {
+Piece.prototype.movePieceDown = function() {
     var lookaheadPosition = {
         row: this.position.row+1,
         column: this.position.column
@@ -52,6 +52,63 @@ Piece.prototype.movePiece = function() {
 
     return false;
 }
+
+Piece.prototype.movePieceLeft = function() {
+    var lookaheadPosition = {
+        row: this.position.row,
+        column: this.position.column-1
+    }
+
+    if(!this.isCoalisionDetected(lookaheadPosition)) {
+        // Deletes piece on previous position
+        for(let i=0; i<this.size; i++) {
+            for(let j=0; j<this.size; j++) {
+                if(this.pieceMatrix[i][j] == 1) {
+                    let row = this.position.row + i;
+                    let column = this.position.column + j;
+                    if(row >= 0) {
+                        let block = document.getElementById('block-' + row + '-' + column);
+                        block.style.color = this.gameBoard.color;
+                    }
+                }
+            }
+        }
+        this.position.column--;
+
+        return true;
+    }
+
+    return false;
+}
+
+Piece.prototype.movePieceRight = function() {
+    var lookaheadPosition = {
+        row: this.position.row,
+        column: this.position.column+1
+    }
+
+    if(!this.isCoalisionDetected(lookaheadPosition)) {
+        // Deletes piece on previous position
+        for(let i=0; i<this.size; i++) {
+            for(let j=0; j<this.size; j++) {
+                if(this.pieceMatrix[i][j] == 1) {
+                    let row = this.position.row + i;
+                    let column = this.position.column + j;
+                    if(row >= 0) {
+                        let block = document.getElementById('block-' + row + '-' + column);
+                        block.style.color = this.gameBoard.color;
+                    }
+                }
+            }
+        }
+        this.position.column++;
+
+        return true;
+    }
+
+    return false;
+}
+
 
 Piece.prototype.isCoalisionDetected = function(lookaheadPosition) {
     for(let i=0; i<this.size; i++) {
@@ -148,7 +205,7 @@ GameBoard.prototype.update = function() {
         this.activePiece.createPiece();
     }
 
-    if(this.activePiece.movePiece()) {
+    if(this.activePiece.movePieceDown()) {
         for(let i=0; i<this.activePiece.size; i++) {
             for(let j=0; j<this.activePiece.size; j++) {
                 if(this.activePiece.pieceMatrix[i][j] == 1) {
@@ -165,21 +222,55 @@ GameBoard.prototype.update = function() {
         for(let i=0; i<this.activePiece.size; i++) {
             for(let j=0; j<this.activePiece.size; j++) {
                 if(this.activePiece.pieceMatrix[i][j] == 1) {
-                    let position = {
+                    let block = {
                         row: this.activePiece.position.row + i,
                         column: this.activePiece.position.column + j,
+                        color: this.activePiece.color
                     }
-                    if(position.row < 0) {
+                    if(block.row < 0) {
                         this.gameEnd = true;
+                    } else {
+                        // Add to head of array for better performance in coalision detection
+                        this.activeBlocks.unshift(block);
                     }
-                    // Add to head of array for better performance in coalision detection
-                    this.activeBlocks.unshift(position);
                 }
             }
+        }
+        for(let index in this.activeBlocks) {
+            let block = document.getElementById('block-' + this.activeBlocks[index].row + '-' + this.activeBlocks[index].column);
+            block.style.color = this.activeBlocks[index].color;
         }
         this.activePiece.createPiece();
     }
 
+}
+
+// Problem with too long key press
+GameBoard.prototype.onKeyDown = function(event) {
+    switch (event.key) {
+        case 'ArrowLeft':
+            if(this.activePiece != null) {
+                this.activePiece.movePieceLeft();
+            }
+            break;
+        case 'ArrowRight':
+            if(this.activePiece != null) {
+                this.activePiece.movePieceRight();
+            }
+            break;
+        case 'ArrowDown':
+            if(this.activePiece != null) {
+                this.activePiece.movePieceDown();
+            }
+            break;
+        case '':
+            if(this.activePiece != null) {
+                this.activePiece.movePieceRight();
+            }
+            break;
+        default:
+            break;
+    }
 }
 //  GAMEBOARD CLASS
 
@@ -210,7 +301,7 @@ function gameLoop(gameBoard, pieceBoard) {
     if(!gameBoard.gameEnd){
         gameBoard.update();
         //pieceBoard.update();
-        sleep(250).then(() => {
+        sleep(100).then(() => {
             gameLoop(gameBoard, pieceBoard);
         });
     } else {
@@ -224,6 +315,7 @@ function main() {
     var gameBoardElement = document.getElementById('game-board');
     var gameBoard = new GameBoard(gameBoardContainerElement, gameBoardElement, 16, 10);
     gameBoard.init();
+    window.onkeydown = gameBoard.onKeyDown.bind(gameBoard);
 
     var pieceBoardContainerElement = document.getElementById('piece-board-container');
     var pieceBoardElement = document.getElementById('piece-board');
