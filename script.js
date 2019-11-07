@@ -26,16 +26,51 @@ Piece.prototype.generatePiece = function(pieceMatrix) {
 }
 
 Piece.prototype.movePiece = function() {
-    this.position.row++;
+    var lookaheadPosition = {
+        row: this.position.row+1,
+        column: this.position.column
+    }
+
+    if(!this.isCoalisionDetected(lookaheadPosition)) {
+        // Deletes piece on previous position
+        for(let i=0; i<this.size; i++) {
+            for(let j=0; j<this.size; j++) {
+                if(this.pieceMatrix[i][j] == 1) {
+                    let row = this.position.row + i;
+                    let column = this.position.column + j;
+                    if(row >= 0) {
+                        let block = document.getElementById('block-' + row + '-' + column);
+                        block.style.color = this.gameBoard.color;
+                    }
+                }
+            }
+        }
+        this.position.row++;
+
+        return true;
+    }
+
+    return false;
+}
+
+Piece.prototype.isCoalisionDetected = function(lookaheadPosition) {
     for(let i=0; i<this.size; i++) {
-        let row = this.position.row-1;
-        let column = this.position.column + i;
-        console.log(row);
-        if(row >= 0 && row < this.gameBoard.numOfRows && column >= 0 && column < this.gameBoard.numOfColumns) {
-            let block = document.getElementById('block-' + row + '-' + column);
-            block.style.color = this.gameBoard.color;
+        for(let j=0; j<this.size; j++) {
+            if(this.pieceMatrix[i][j] == 1) {
+                let row = lookaheadPosition.row + i;
+                let column = lookaheadPosition.column + j;
+                if(row >= this.gameBoard.numOfRows || column >= this.gameBoard.numOfColumns || column < 0) {
+                    return true;
+                }
+                for(let index in this.gameBoard.activeBlocks) {
+                    if(this.gameBoard.activeBlocks[index].row == row && this.gameBoard.activeBlocks[index].column == column) {
+                        return true;
+                    }
+                }
+            }
         }
     }
+    return false;
 }
 //  PIECE CLASS
 
@@ -102,6 +137,7 @@ Board.prototype.drawEmptyBoard = function() {
 function GameBoard(boardContainerElement, boardElement, numOfRows=1, numOfColumns=1) {
     Board.call(this, boardContainerElement, boardElement, numOfRows, numOfColumns);
     this.activePiece = null;
+    this.gameEnd = false;
 }
 
 GameBoard.prototype = Object.create(Board.prototype);
@@ -111,23 +147,39 @@ GameBoard.prototype.update = function() {
         this.activePiece = new OPiece(this);
         this.activePiece.createPiece();
     }
-    for(let i=0; i<this.activePiece.size; i++) {
-        for(let j=0; j<this.activePiece.size; j++) {
-            if(this.activePiece.pieceMatrix[i][j] == 1) {
-                let row = this.activePiece.position.row + i;
-                if(row >= this.numOfRows) {
-                    this.activePiece.createPiece();
-                    break;
-                } 
-                let column = this.activePiece.position.column + j;
-                if(row >= 0 && row < this.numOfRows && column >= 0 && column < this.numOfColumns) {
-                    let block = document.getElementById('block-' + row + '-' + column);
-                    block.style.color = this.activePiece.color;
+
+    if(this.activePiece.movePiece()) {
+        for(let i=0; i<this.activePiece.size; i++) {
+            for(let j=0; j<this.activePiece.size; j++) {
+                if(this.activePiece.pieceMatrix[i][j] == 1) {
+                    let row = this.activePiece.position.row + i;
+                    let column = this.activePiece.position.column + j;
+                    if(row >= 0) {
+                        let block = document.getElementById('block-' + row + '-' + column);
+                        block.style.color = this.activePiece.color;
+                    }
                 }
             }
         }
+    } else {
+        for(let i=0; i<this.activePiece.size; i++) {
+            for(let j=0; j<this.activePiece.size; j++) {
+                if(this.activePiece.pieceMatrix[i][j] == 1) {
+                    let position = {
+                        row: this.activePiece.position.row + i,
+                        column: this.activePiece.position.column + j,
+                    }
+                    if(position.row < 0) {
+                        this.gameEnd = true;
+                    }
+                    // Add to head of array for better performance in coalision detection
+                    this.activeBlocks.unshift(position);
+                }
+            }
+        }
+        this.activePiece.createPiece();
     }
-    this.activePiece.movePiece();
+
 }
 //  GAMEBOARD CLASS
 
@@ -154,17 +206,15 @@ PieceBoard.prototype.drawEmptyBoard = function() {
 //  PIECEBOARDCLASS
 
 
-function gameEnd() {
-    return false;
-}
-
 function gameLoop(gameBoard, pieceBoard) {
-    if(!gameEnd()){
+    if(!gameBoard.gameEnd){
         gameBoard.update();
         //pieceBoard.update();
-        sleep(1000).then(() => {
+        sleep(250).then(() => {
             gameLoop(gameBoard, pieceBoard);
         });
+    } else {
+        console.log('GAME OVER');
     }
 }
 
