@@ -131,6 +131,20 @@ Piece.prototype.isCoalisionDetected = function(lookaheadPosition) {
 }
 //  PIECE CLASS
 
+//  IPIECE CLASS
+function IPiece(gameBoard) {
+    Piece.call(this, gameBoard);
+    this.color = '#00FFFF';
+    this.iPieceMatrix = [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]];
+}
+
+IPiece.prototype = Object.create(Piece.prototype);
+
+IPiece.prototype.createPiece = function() {
+    this.generatePiece(this.iPieceMatrix);
+}
+//  IPIECE CLASS
+
 //  OPIECE CLASS
 function OPiece(gameBoard) {
     Piece.call(this, gameBoard);
@@ -144,6 +158,76 @@ OPiece.prototype.createPiece = function() {
     this.generatePiece(this.oPieceMatrix);
 }
 //  OPIECE CLASS
+
+//  TPIECE CLASS
+function TPiece(gameBoard) {
+    Piece.call(this, gameBoard);
+    this.color = '#800080';
+    this.tPieceMatrix = [[0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+}
+
+TPiece.prototype = Object.create(Piece.prototype);
+
+TPiece.prototype.createPiece = function() {
+    this.generatePiece(this.tPieceMatrix);
+}
+//  TPIECE CLASS
+
+//  SPIECE CLASS
+function SPiece(gameBoard) {
+    Piece.call(this, gameBoard);
+    this.color = '#00FF00';
+    this.sPieceMatrix = [[0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+}
+
+SPiece.prototype = Object.create(Piece.prototype);
+
+SPiece.prototype.createPiece = function() {
+    this.generatePiece(this.sPieceMatrix);
+}
+//  SPIECE CLASS
+
+//  ZPIECE CLASS
+function ZPiece(gameBoard) {
+    Piece.call(this, gameBoard);
+    this.color = '#FF0000';
+    this.zPieceMatrix = [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+}
+
+ZPiece.prototype = Object.create(Piece.prototype);
+
+ZPiece.prototype.createPiece = function() {
+    this.generatePiece(this.zPieceMatrix);
+}
+//  ZPIECE CLASS
+
+//  JPIECE CLASS
+function JPiece(gameBoard) {
+    Piece.call(this, gameBoard);
+    this.color = '#0000FF';
+    this.jPieceMatrix = [[1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+}
+
+JPiece.prototype = Object.create(Piece.prototype);
+
+JPiece.prototype.createPiece = function() {
+    this.generatePiece(this.jPieceMatrix);
+}
+//  JPIECE CLASS
+
+//  LPIECE CLASS
+function LPiece(gameBoard) {
+    Piece.call(this, gameBoard);
+    this.color = '#FFA500';
+    this.lPieceMatrix = [[0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+}
+
+LPiece.prototype = Object.create(Piece.prototype);
+
+LPiece.prototype.createPiece = function() {
+    this.generatePiece(this.lPieceMatrix);
+}
+//  LPIECE CLASS
 
 //  BOARD CLASS
 function Board(boardContainerElement, boardElement, numOfRows=1, numOfColumns=1) {
@@ -200,9 +284,9 @@ function GameBoard(boardContainerElement, boardElement, numOfRows=1, numOfColumn
 GameBoard.prototype = Object.create(Board.prototype);
 
 GameBoard.prototype.update = function() {
+    // Creating first game piece
     if(this.activePiece == null) {
-        this.activePiece = new OPiece(this);
-        this.activePiece.createPiece();
+        this.generateRandomPiece();
     }
 
     if(this.activePiece.movePieceDown()) {
@@ -240,7 +324,7 @@ GameBoard.prototype.update = function() {
             let block = document.getElementById('block-' + this.activeBlocks[index].row + '-' + this.activeBlocks[index].column);
             block.style.color = this.activeBlocks[index].color;
         }
-        this.activePiece.createPiece();
+        this.generateRandomPiece();
     }
 
 }
@@ -263,12 +347,44 @@ GameBoard.prototype.onKeyDown = function(event) {
                 this.activePiece.movePieceDown();
             }
             break;
-        case '':
-            if(this.activePiece != null) {
-                this.activePiece.movePieceRight();
-            }
+        default:
+            break;
+    }
+}
+
+GameBoard.prototype.generateRandomPiece = function() {
+    var pieceIndex = Math.floor(Math.random() * 7);
+    switch (pieceIndex) {
+        case 0:
+            this.activePiece = new IPiece(this);
+            this.activePiece.createPiece();
+            break;
+        case 1:
+            this.activePiece = new OPiece(this);
+            this.activePiece.createPiece();
+            break;
+        case 2:
+            this.activePiece = new TPiece(this);
+            this.activePiece.createPiece();
+            break;
+        case 3:
+            this.activePiece = new SPiece(this);
+            this.activePiece.createPiece();
+            break;
+        case 4:
+            this.activePiece = new ZPiece(this);
+            this.activePiece.createPiece();
+            break;
+        case 5:
+            this.activePiece = new JPiece(this);
+            this.activePiece.createPiece();
+            break;
+        case 6:
+            this.activePiece = new LPiece(this);
+            this.activePiece.createPiece();
             break;
         default:
+            console.log('Invalid piece generated');
             break;
     }
 }
@@ -301,7 +417,7 @@ function gameLoop(gameBoard, pieceBoard) {
     if(!gameBoard.gameEnd){
         gameBoard.update();
         //pieceBoard.update();
-        sleep(100).then(() => {
+        sleep(500).then(() => {
             gameLoop(gameBoard, pieceBoard);
         });
     } else {
