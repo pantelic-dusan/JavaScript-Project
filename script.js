@@ -30,8 +30,8 @@ Piece.prototype.movePieceDown = function() {
         row: this.position.row+1,
         column: this.position.column
     }
-
-    if(!this.isCoalisionDetected(lookaheadPosition)) {
+    
+    if(!this.isCoalisionDetected(lookaheadPosition, this.pieceMatrix)) {
         // Deletes piece on previous position
         for(let i=0; i<this.size; i++) {
             for(let j=0; j<this.size; j++) {
@@ -58,8 +58,8 @@ Piece.prototype.movePieceLeft = function() {
         row: this.position.row,
         column: this.position.column-1
     }
-
-    if(!this.isCoalisionDetected(lookaheadPosition)) {
+    
+    if(!this.isCoalisionDetected(lookaheadPosition, this.pieceMatrix)) {
         // Deletes piece on previous position
         for(let i=0; i<this.size; i++) {
             for(let j=0; j<this.size; j++) {
@@ -86,8 +86,8 @@ Piece.prototype.movePieceRight = function() {
         row: this.position.row,
         column: this.position.column+1
     }
-
-    if(!this.isCoalisionDetected(lookaheadPosition)) {
+    
+    if(!this.isCoalisionDetected(lookaheadPosition, this.pieceMatrix)) {
         // Deletes piece on previous position
         for(let i=0; i<this.size; i++) {
             for(let j=0; j<this.size; j++) {
@@ -109,11 +109,94 @@ Piece.prototype.movePieceRight = function() {
     return false;
 }
 
+Piece.prototype.rotatePieceClockwise = function() {
+    // Rotating 4x4 matrix in place
 
-Piece.prototype.isCoalisionDetected = function(lookaheadPosition) {
+    // copy array by value
+    var lookaheadPieceMatrix = JSON.parse(JSON.stringify(this.pieceMatrix));
+    var n = lookaheadPieceMatrix.length;
+    var m = Math.floor(n/2);
+   
+    for(let i=0; i<m; i++) {
+        for(let j=i; j<n-1-i; j++) {
+            let tmp = lookaheadPieceMatrix[i][j];
+            lookaheadPieceMatrix[i][j] = lookaheadPieceMatrix[n-1-j][i];
+            lookaheadPieceMatrix[n-1-j][i] = lookaheadPieceMatrix[n-1-i][n-1-j];
+            lookaheadPieceMatrix[n-1-i][n-1-j] = lookaheadPieceMatrix[j][n-1-i];
+            lookaheadPieceMatrix[j][n-1-i] = tmp;
+        }
+    }
+    
+
+    if(!this.isCoalisionDetected(this.position, lookaheadPieceMatrix)) {
+        // Deletes piece on previous position
+        for(let i=0; i<this.size; i++) {
+            for(let j=0; j<this.size; j++) {
+                if(this.pieceMatrix[i][j] == 1) {
+                    let row = this.position.row + i;
+                    let column = this.position.column + j;
+                    if(row >= 0) {
+                        console.log(row);
+                        let block = document.getElementById('block-' + row + '-' + column);
+                        block.style.color = this.gameBoard.color;
+                    }
+                }
+            }
+        }
+
+        this.pieceMatrix = lookaheadPieceMatrix;
+        return true;
+    }
+
+    return false;
+}
+
+Piece.prototype.rotatePieceCounterClockwise = function() {
+    // Rotating 4x4 matrix in place
+
+    // copy array by value
+    var lookaheadPieceMatrix = JSON.parse(JSON.stringify(this.pieceMatrix));
+    var n = lookaheadPieceMatrix.length;
+    var m = Math.floor(n/2);
+   
+    for(let i=0; i<m; i++) {
+        for(let j=i; j<n-1-i; j++) {
+            let tmp = lookaheadPieceMatrix[i][j];
+            lookaheadPieceMatrix[i][j] = lookaheadPieceMatrix[j][n-1-i];
+            lookaheadPieceMatrix[j][n-1-i] = lookaheadPieceMatrix[n-1-i][n-1-j];
+            lookaheadPieceMatrix[n-1-i][n-1-j] = lookaheadPieceMatrix[n-1-j][i];
+            lookaheadPieceMatrix[n-1-j][i] = tmp;
+        }
+    }
+    
+
+    if(!this.isCoalisionDetected(this.position, lookaheadPieceMatrix)) {
+        // Deletes piece on previous position
+        for(let i=0; i<this.size; i++) {
+            for(let j=0; j<this.size; j++) {
+                if(this.pieceMatrix[i][j] == 1) {
+                    let row = this.position.row + i;
+                    let column = this.position.column + j;
+                    if(row >= 0) {
+                        console.log(row);
+                        let block = document.getElementById('block-' + row + '-' + column);
+                        block.style.color = this.gameBoard.color;
+                    }
+                }
+            }
+        }
+
+        this.pieceMatrix = lookaheadPieceMatrix;
+        return true;
+    }
+
+    return false;
+}
+
+Piece.prototype.isCoalisionDetected = function(lookaheadPosition, lookaheadPieceMatrix) {
     for(let i=0; i<this.size; i++) {
         for(let j=0; j<this.size; j++) {
-            if(this.pieceMatrix[i][j] == 1) {
+            if(lookaheadPieceMatrix[i][j] == 1) {
                 let row = lookaheadPosition.row + i;
                 let column = lookaheadPosition.column + j;
                 if(row >= this.gameBoard.numOfRows || column >= this.gameBoard.numOfColumns || column < 0) {
@@ -350,6 +433,18 @@ GameBoard.prototype.onKeyDown = function(event) {
         case 'ArrowDown':
             if(this.activePiece != null) {
                 this.activePiece.movePieceDown();
+            }
+            break;
+        case 'd':
+        case 'D':
+            if(this.activePiece != null) {
+                this.activePiece.rotatePieceClockwise();
+            }
+            break;
+        case 'a':
+        case 'A':
+            if(this.activePiece != null) {
+                this.activePiece.rotatePieceCounterClockwise();
             }
             break;
         default:
