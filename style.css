@@ -88,14 +88,14 @@ legend {
 
 #game-board {
     display: grid;
-    grid-auto-flow: column;
+    grid-auto-flow: row;
     padding: 0;
     margin: auto;
 }
 
 #piece-board {
     display: grid;
-    grid-auto-flow: column;
+    grid-auto-flow: row;
     padding: 0;
     margin: auto;
 }

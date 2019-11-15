@@ -119,10 +119,8 @@ Piece.prototype.isCoalisionDetected = function(lookaheadPosition) {
                 if(row >= this.gameBoard.numOfRows || column >= this.gameBoard.numOfColumns || column < 0) {
                     return true;
                 }
-                for(let index in this.gameBoard.activeBlocks) {
-                    if(this.gameBoard.activeBlocks[index].row == row && this.gameBoard.activeBlocks[index].column == column) {
-                        return true;
-                    }
+                if(row >= 0 && this.gameBoard.blockMatrix[row][column].color != this.gameBoard.color) {
+                    return true;
                 }
             }
         }
@@ -238,10 +236,14 @@ function Board(boardContainerElement, boardElement, numOfRows=1, numOfColumns=1)
     this.blockSize = 1;
     this.color='#FFFFFF';
     this.opacity = 0.6;
-    this.activeBlocks = [];
+    this.blockMatrix = null;
 }
 
 Board.prototype.init = function() {
+    this.blockMatrix = new Array(this.numOfRows);
+    for(let i=0; i<this.numOfRows; i++) {
+        this.blockMatrix[i] = new Array(this.numOfColumns);
+    }
     this.calculateBlockSize();
     this.boardElement.style.gridTemplateColumns = 'repeat(' + this.numOfColumns + ', 1fr)';
     this.boardElement.style.gridTemplateRows = 'repeat(' + this.numOfRows + ', 1fr)';
@@ -260,15 +262,22 @@ Board.prototype.calculateBlockSize = function() {
 }
 
 Board.prototype.drawEmptyBoard = function() {
-    for(let i=0; i<this.numOfColumns; i++) {
-        for(let j=0; j<this.numOfRows; j++) {
+    for(let i=0; i<this.numOfRows; i++) {
+        for(let j=0; j<this.numOfColumns; j++) {
             let node = document.createElement('i');
-            node.setAttribute('id', 'block-' + j + '-' + i);
+            node.setAttribute('id', 'block-' + i + '-' + j);
             node.setAttribute('class', 'fas fa-square');
             node.style.fontSize = this.blockSize.toString() + 'px';
             node.style.color = this.color;
             node.style.opacity = this.opacity.toString();
             this.boardElement.appendChild(node);
+            let block = {
+                row: i,
+                column: j,
+                blockElement: node,
+                color: this.color
+            }
+            this.blockMatrix[i][j] = block;
         }
     }
 }
@@ -306,26 +315,22 @@ GameBoard.prototype.update = function() {
         for(let i=0; i<this.activePiece.size; i++) {
             for(let j=0; j<this.activePiece.size; j++) {
                 if(this.activePiece.pieceMatrix[i][j] == 1) {
-                    let block = {
-                        row: this.activePiece.position.row + i,
-                        column: this.activePiece.position.column + j,
-                        color: this.activePiece.color
-                    }
-                    if(block.row < 0) {
+                    let row = this.activePiece.position.row + i;
+                    let column = this.activePiece.position.column + j;
+                    if(row < 0) {
                         this.gameEnd = true;
                     } else {
-                        // Add to head of array for better performance in coalision detection
-                        this.activeBlocks.unshift(block);
+                        this.blockMatrix[row][column].color = this.activePiece.color;
+                        this.blockMatrix[row][column].blockElement.style.color = this.activePiece.color;
                     }
                 }
             }
         }
-        for(let index in this.activeBlocks) {
-            let block = document.getElementById('block-' + this.activeBlocks[index].row + '-' + this.activeBlocks[index].column);
-            block.style.color = this.activeBlocks[index].color;
-        }
+    
         this.generateRandomPiece();
     }
+
+    this.destroyFilledRows();
 
 }
 
@@ -386,6 +391,32 @@ GameBoard.prototype.generateRandomPiece = function() {
         default:
             console.log('Invalid piece generated');
             break;
+    }
+}
+
+GameBoard.prototype.destroyFilledRows = function() {
+    for(let i=0; i<this.numOfRows; i++) {
+        let destroyRow = true;
+        for(let j=0; j<this.numOfColumns; j++) {
+            if(this.blockMatrix[i][j].color == this.color){
+                destroyRow = false;
+            }
+        }
+
+        if(destroyRow) {
+            for(let k=i; k>=0; k--) {
+                for(let l=0; l<this.numOfColumns; l++) {
+                    let color = null;
+                    if (k == 0) {
+                        color = this.color;
+                    } else {
+                        color = this.blockMatrix[k-1][l].color;
+                    }
+                    this.blockMatrix[k][l].color = color;
+                    this.blockMatrix[k][l].blockElement.style.color = color;
+                }
+            }
+        }
     }
 }
 //  GAMEBOARD CLASS
