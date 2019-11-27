@@ -17,12 +17,18 @@ function Piece(gameBoard) {
         row: 0,
         column: 0
     }
+    this.originPoint = {
+        row: 0,
+        column: 0
+    }
 }
 
-Piece.prototype.generatePiece = function(pieceMatrix) {
+Piece.prototype.generatePiece = function(pieceMatrix, originPoint) {
     this.position.row = -4;
     this.position.column = Math.round(Math.random() * (this.gameBoard.numOfColumns - this.size));
     this.pieceMatrix = pieceMatrix;
+    this.originPoint.row = originPoint.row;
+    this.originPoint.column = originPoint.column;
 }
 
 Piece.prototype.movePieceDown = function() {
@@ -112,22 +118,19 @@ Piece.prototype.movePieceRight = function() {
 Piece.prototype.rotatePieceClockwise = function() {
     // Rotating 4x4 matrix in place
 
-    // copy array by value
-    var lookaheadPieceMatrix = JSON.parse(JSON.stringify(this.pieceMatrix));
+    var lookaheadPieceMatrix = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
     var n = lookaheadPieceMatrix.length;
-    var m = Math.floor(n/2);
    
-    for(let i=0; i<m; i++) {
-        for(let j=i; j<n-1-i; j++) {
-            let tmp = lookaheadPieceMatrix[i][j];
-            lookaheadPieceMatrix[i][j] = lookaheadPieceMatrix[n-1-j][i];
-            lookaheadPieceMatrix[n-1-j][i] = lookaheadPieceMatrix[n-1-i][n-1-j];
-            lookaheadPieceMatrix[n-1-i][n-1-j] = lookaheadPieceMatrix[j][n-1-i];
-            lookaheadPieceMatrix[j][n-1-i] = tmp;
+    for(let i=0; i<n; i++) {
+        for(let j=0; j<n; j++) {
+            if (this.pieceMatrix[i][j] == 1) {
+                let r = Math.abs(j + this.originPoint.row - this.originPoint.column);
+                let c = Math.abs(this.originPoint.column + this.originPoint.row - i);
+                lookaheadPieceMatrix[r][c] = 1;
+            }
         }
     }
     
-
     if(!this.isCoalisionDetected(this.position, lookaheadPieceMatrix)) {
         // Deletes piece on previous position
         for(let i=0; i<this.size; i++) {
@@ -136,15 +139,14 @@ Piece.prototype.rotatePieceClockwise = function() {
                     let row = this.position.row + i;
                     let column = this.position.column + j;
                     if(row >= 0) {
-                        console.log(row);
                         let block = document.getElementById('block-' + row + '-' + column);
                         block.style.color = this.gameBoard.color;
                     }
                 }
+                this.pieceMatrix[i][j] = lookaheadPieceMatrix[i][j];
             }
         }
 
-        this.pieceMatrix = lookaheadPieceMatrix;
         return true;
     }
 
@@ -154,22 +156,19 @@ Piece.prototype.rotatePieceClockwise = function() {
 Piece.prototype.rotatePieceCounterClockwise = function() {
     // Rotating 4x4 matrix in place
 
-    // copy array by value
-    var lookaheadPieceMatrix = JSON.parse(JSON.stringify(this.pieceMatrix));
+    var lookaheadPieceMatrix = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
     var n = lookaheadPieceMatrix.length;
-    var m = Math.floor(n/2);
    
-    for(let i=0; i<m; i++) {
-        for(let j=i; j<n-1-i; j++) {
-            let tmp = lookaheadPieceMatrix[i][j];
-            lookaheadPieceMatrix[i][j] = lookaheadPieceMatrix[j][n-1-i];
-            lookaheadPieceMatrix[j][n-1-i] = lookaheadPieceMatrix[n-1-i][n-1-j];
-            lookaheadPieceMatrix[n-1-i][n-1-j] = lookaheadPieceMatrix[n-1-j][i];
-            lookaheadPieceMatrix[n-1-j][i] = tmp;
+    for(let i=0; i<n; i++) {
+        for(let j=0; j<n; j++) {
+            if (this.pieceMatrix[i][j] == 1) {
+                let r = Math.abs(this.originPoint.row + this.originPoint.column - j);
+                let c = Math.abs(this.originPoint.column + i - this.originPoint.row);
+                lookaheadPieceMatrix[r][c] = 1;
+            }
         }
     }
     
-
     if(!this.isCoalisionDetected(this.position, lookaheadPieceMatrix)) {
         // Deletes piece on previous position
         for(let i=0; i<this.size; i++) {
@@ -178,15 +177,14 @@ Piece.prototype.rotatePieceCounterClockwise = function() {
                     let row = this.position.row + i;
                     let column = this.position.column + j;
                     if(row >= 0) {
-                        console.log(row);
                         let block = document.getElementById('block-' + row + '-' + column);
                         block.style.color = this.gameBoard.color;
                     }
                 }
+                this.pieceMatrix[i][j] = lookaheadPieceMatrix[i][j];
             }
         }
 
-        this.pieceMatrix = lookaheadPieceMatrix;
         return true;
     }
 
@@ -217,12 +215,16 @@ function IPiece(gameBoard) {
     Piece.call(this, gameBoard);
     this.color = '#00FFFF';
     this.iPieceMatrix = [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]];
+    this.iOriginPoint = {
+        row: 0,
+        column: 0
+    }
 }
 
 IPiece.prototype = Object.create(Piece.prototype);
 
 IPiece.prototype.createPiece = function() {
-    this.generatePiece(this.iPieceMatrix);
+    this.generatePiece(this.iPieceMatrix, this.iOriginPoint);
 }
 //  IPIECE CLASS
 
@@ -231,12 +233,16 @@ function OPiece(gameBoard) {
     Piece.call(this, gameBoard);
     this.color = '#FFFF00';
     this.oPieceMatrix = [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]];
+    this.oOriginPoint = {
+        row: 0,
+        column: 0
+    }
 }
 
 OPiece.prototype = Object.create(Piece.prototype);
 
 OPiece.prototype.createPiece = function() {
-    this.generatePiece(this.oPieceMatrix);
+    this.generatePiece(this.oPieceMatrix, this.oOriginPoint);
 }
 //  OPIECE CLASS
 
@@ -245,12 +251,16 @@ function TPiece(gameBoard) {
     Piece.call(this, gameBoard);
     this.color = '#800080';
     this.tPieceMatrix = [[0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    this.tOriginPoint = {
+        row: 1,
+        column: 1
+    }
 }
 
 TPiece.prototype = Object.create(Piece.prototype);
 
 TPiece.prototype.createPiece = function() {
-    this.generatePiece(this.tPieceMatrix);
+    this.generatePiece(this.tPieceMatrix, this.tOriginPoint);
 }
 //  TPIECE CLASS
 
@@ -259,12 +269,16 @@ function SPiece(gameBoard) {
     Piece.call(this, gameBoard);
     this.color = '#00FF00';
     this.sPieceMatrix = [[0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    this.sOriginPoint = {
+        row: 1,
+        column: 1
+    }
 }
 
 SPiece.prototype = Object.create(Piece.prototype);
 
 SPiece.prototype.createPiece = function() {
-    this.generatePiece(this.sPieceMatrix);
+    this.generatePiece(this.sPieceMatrix, this.sOriginPoint);
 }
 //  SPIECE CLASS
 
@@ -273,12 +287,16 @@ function ZPiece(gameBoard) {
     Piece.call(this, gameBoard);
     this.color = '#FF0000';
     this.zPieceMatrix = [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    this.zOriginPoint = {
+        row: 1,
+        column: 1
+    }
 }
 
 ZPiece.prototype = Object.create(Piece.prototype);
 
 ZPiece.prototype.createPiece = function() {
-    this.generatePiece(this.zPieceMatrix);
+    this.generatePiece(this.zPieceMatrix, this.zOriginPoint);
 }
 //  ZPIECE CLASS
 
@@ -287,12 +305,16 @@ function JPiece(gameBoard) {
     Piece.call(this, gameBoard);
     this.color = '#0000FF';
     this.jPieceMatrix = [[1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    this.jOriginPoint = {
+        row: 1,
+        column: 1
+    }
 }
 
 JPiece.prototype = Object.create(Piece.prototype);
 
 JPiece.prototype.createPiece = function() {
-    this.generatePiece(this.jPieceMatrix);
+    this.generatePiece(this.jPieceMatrix, this.jOriginPoint);
 }
 //  JPIECE CLASS
 
@@ -301,12 +323,16 @@ function LPiece(gameBoard) {
     Piece.call(this, gameBoard);
     this.color = '#FFA500';
     this.lPieceMatrix = [[0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    this.lOriginPoint = {
+        row: 1,
+        column: 1
+    }
 }
 
 LPiece.prototype = Object.create(Piece.prototype);
 
 LPiece.prototype.createPiece = function() {
-    this.generatePiece(this.lPieceMatrix);
+    this.generatePiece(this.lPieceMatrix, this.lOriginPoint);
 }
 //  LPIECE CLASS
 
@@ -370,6 +396,7 @@ Board.prototype.drawEmptyBoard = function() {
 function GameBoard(boardContainerElement, boardElement, numOfRows=1, numOfColumns=1) {
     Board.call(this, boardContainerElement, boardElement, numOfRows, numOfColumns);
     this.activePiece = null;
+    this.nextPiece = null;
     this.gameEnd = false;
 }
 
@@ -377,11 +404,14 @@ GameBoard.prototype = Object.create(Board.prototype);
 
 GameBoard.prototype.update = function() {
     // Creating first game piece
-    if(this.activePiece == null) {
-        this.generateRandomPiece();
+    if (this.activePiece == null) {
+        this.activePiece = this.generateRandomPiece();
+    }
+    if (this.nextPiece == null) {
+        this.nextPiece = this.generateRandomPiece();
     }
 
-    if(this.activePiece.movePieceDown()) {
+    if (this.activePiece.movePieceDown()) {
         for(let i=0; i<this.activePiece.size; i++) {
             for(let j=0; j<this.activePiece.size; j++) {
                 if(this.activePiece.pieceMatrix[i][j] == 1) {
@@ -409,8 +439,9 @@ GameBoard.prototype.update = function() {
                 }
             }
         }
-    
-        this.generateRandomPiece();
+        
+        this.activePiece = this.nextPiece;
+        this.nextPiece = this.generateRandomPiece();
     }
 
     this.destroyFilledRows();
@@ -453,40 +484,42 @@ GameBoard.prototype.onKeyDown = function(event) {
 }
 
 GameBoard.prototype.generateRandomPiece = function() {
+    var piece = null;
     var pieceIndex = Math.floor(Math.random() * 7);
     switch (pieceIndex) {
         case 0:
-            this.activePiece = new IPiece(this);
-            this.activePiece.createPiece();
+            piece = new IPiece(this);
+            piece.createPiece();
             break;
         case 1:
-            this.activePiece = new OPiece(this);
-            this.activePiece.createPiece();
+            piece = new OPiece(this);
+            piece.createPiece();
             break;
         case 2:
-            this.activePiece = new TPiece(this);
-            this.activePiece.createPiece();
+            piece = new TPiece(this);
+            piece.createPiece();
             break;
         case 3:
-            this.activePiece = new SPiece(this);
-            this.activePiece.createPiece();
+            piece = new SPiece(this);
+            piece.createPiece();
             break;
         case 4:
-            this.activePiece = new ZPiece(this);
-            this.activePiece.createPiece();
+            piece = new ZPiece(this);
+            piece.createPiece();
             break;
         case 5:
-            this.activePiece = new JPiece(this);
-            this.activePiece.createPiece();
+            piece = new JPiece(this);
+            piece.createPiece();
             break;
         case 6:
-            this.activePiece = new LPiece(this);
-            this.activePiece.createPiece();
+            piece = new LPiece(this);
+            piece.createPiece();
             break;
         default:
             console.log('Invalid piece generated');
             break;
     }
+    return piece;
 }
 
 GameBoard.prototype.destroyFilledRows = function() {
@@ -527,12 +560,29 @@ PieceBoard.prototype.drawEmptyBoard = function() {
     for(let i=0; i<this.numOfColumns; i++) {
         for(let j=0; j<this.numOfRows; j++) {
             let node = document.createElement('i');
-            node.setAttribute('id', 'piece-block-' + j + '-' + i);
+            node.setAttribute('id', 'piece-block-' + i + '-' + j);
             node.setAttribute('class', 'fas fa-square');
             node.style.fontSize = this.blockSize.toString() + 'px';
             node.style.color = this.color;
             node.style.opacity = this.opacity.toString();
             this.boardElement.appendChild(node);
+        }
+    }
+}
+
+PieceBoard.prototype.drawNextPiece = function(nextPiece) {
+    let n = nextPiece.pieceMatrix.length
+    for(let i=0; i<n; i++) {
+        for(let j=0; j<n; j++) {
+            let block = document.getElementById('piece-block-' + i + '-' + j);
+            if (nextPiece.pieceMatrix[i][j] == 1) {
+                block.style.color = nextPiece.color;
+                block.style.opacity = this.opacity;
+            }
+            else {
+                block.style.color = this.color;
+                block.style.opacity = 0;
+            }
         }
     }
 }
@@ -542,6 +592,7 @@ PieceBoard.prototype.drawEmptyBoard = function() {
 function gameLoop(gameBoard, pieceBoard) {
     if(!gameBoard.gameEnd){
         gameBoard.update();
+        pieceBoard.drawNextPiece(gameBoard.nextPiece);
         //pieceBoard.update();
         sleep(500).then(() => {
             gameLoop(gameBoard, pieceBoard);
