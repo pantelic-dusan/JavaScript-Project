@@ -398,6 +398,12 @@ function GameBoard(boardContainerElement, boardElement, numOfRows=1, numOfColumn
     this.activePiece = null;
     this.nextPiece = null;
     this.gameEnd = false;
+    this.paused = false;
+    this.level = 0;
+    this.levelElement = document.getElementById('level');
+    this.score = 0;
+    this.scoreElement = document.getElementById('score');
+    this.numOfDestroyedLines = 0;
 }
 
 GameBoard.prototype = Object.create(Board.prototype);
@@ -450,36 +456,43 @@ GameBoard.prototype.update = function() {
 
 // Problem with too long key press
 GameBoard.prototype.onKeyDown = function(event) {
-    switch (event.key) {
-        case 'ArrowLeft':
-            if(this.activePiece != null) {
-                this.activePiece.movePieceLeft();
-            }
-            break;
-        case 'ArrowRight':
-            if(this.activePiece != null) {
-                this.activePiece.movePieceRight();
-            }
-            break;
-        case 'ArrowDown':
-            if(this.activePiece != null) {
-                this.activePiece.movePieceDown();
-            }
-            break;
-        case 'd':
-        case 'D':
-            if(this.activePiece != null) {
-                this.activePiece.rotatePieceClockwise();
-            }
-            break;
-        case 'a':
-        case 'A':
-            if(this.activePiece != null) {
-                this.activePiece.rotatePieceCounterClockwise();
-            }
-            break;
-        default:
-            break;
+
+    if (event.code == 'Space') {
+        this.paused = !this.paused;
+    }
+
+    if (!this.paused) {
+        switch (event.key) {
+            case 'ArrowLeft':
+                if(this.activePiece != null) {
+                    this.activePiece.movePieceLeft();
+                }
+                break;
+            case 'ArrowRight':
+                if(this.activePiece != null) {
+                    this.activePiece.movePieceRight();
+                }
+                break;
+            case 'ArrowDown':
+                if(this.activePiece != null) {
+                    this.activePiece.movePieceDown();
+                }
+                break;
+            case 'd':
+            case 'D':
+                if(this.activePiece != null) {
+                    this.activePiece.rotatePieceClockwise();
+                }
+                break;
+            case 'a':
+            case 'A':
+                if(this.activePiece != null) {
+                    this.activePiece.rotatePieceCounterClockwise();
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -523,6 +536,7 @@ GameBoard.prototype.generateRandomPiece = function() {
 }
 
 GameBoard.prototype.destroyFilledRows = function() {
+    var destroyedRowsCount = 0;
     for(let i=0; i<this.numOfRows; i++) {
         let destroyRow = true;
         for(let j=0; j<this.numOfColumns; j++) {
@@ -532,6 +546,7 @@ GameBoard.prototype.destroyFilledRows = function() {
         }
 
         if(destroyRow) {
+            destroyedRowsCount += 1;
             for(let k=i; k>=0; k--) {
                 for(let l=0; l<this.numOfColumns; l++) {
                     let color = null;
@@ -545,6 +560,40 @@ GameBoard.prototype.destroyFilledRows = function() {
                 }
             }
         }
+    }
+
+    switch (destroyedRowsCount) {
+        case 1:
+            this.score += 40*(this.level+1);
+            this.scoreElement.innerHTML = 'SCORE : ' + this.score;
+            break;
+        case 2:
+                this.score += 100*(this.level+1);
+                this.scoreElement.innerHTML = 'SCORE : ' + this.score;
+                break;
+        case 3:
+                this.score += 300*(this.level+1);
+                this.scoreElement.innerHTML = 'SCORE : ' + this.score;
+                break;
+        case 4:
+                this.score += 1200*(this.level+1);
+                this.scoreElement.innerHTML = 'SCORE : ' + this.score;
+                break;
+        default:
+            break;
+    }
+
+    this.numOfDestroyedLines += destroyedRowsCount;
+    if (this.level >= 30) {
+        if (this.numOfDestroyedLines >= 10) {
+            this.numOfDestroyedLines = 0;
+            this.level += 1;
+            this.levelElement.innerHTML = 'LEVEL : ' + this.level;
+        }
+    } else if (this.numOfDestroyedLines >= (this.level*10+10) || this.numOfDestroyedLines >= Math.max(100, this.level*10-50)) {
+        this.numOfDestroyedLines = 0;
+        this.level += 1;
+        this.levelElement.innerHTML = 'LEVEL : ' + this.level;
     }
 }
 //  GAMEBOARD CLASS
@@ -590,15 +639,32 @@ PieceBoard.prototype.drawNextPiece = function(nextPiece) {
 
 
 function gameLoop(gameBoard, pieceBoard) {
-    if(!gameBoard.gameEnd){
+    if(!gameBoard.gameEnd && !gameBoard.paused){
         gameBoard.update();
         pieceBoard.drawNextPiece(gameBoard.nextPiece);
-        //pieceBoard.update();
-        sleep(500).then(() => {
+
+        let timeSleep = 0;
+        if (gameBoard.level < 10) {
+            timeSleep = (48 - (5*gameBoard.level))/60;
+        } else if (gameBoard.level >= 10 && gameBoard.level <= 12) {
+            timeSleep = 5/60;
+        } else if (gameBoard.level >= 13 && gameBoard.level <= 15) {
+            timeSleep = 4/60;
+        } else if (gameBoard.level >= 16 && gameBoard.level <= 18) {
+            timeSleep = 3/60;
+        } else if (gameBoard.level >= 19 && gameBoard.level <= 28) {
+            timeSleep = 2/60;
+        } else if (gameBoard.level >= 29) {
+            timeSleep = 1/60;
+        }
+
+        sleep(timeSleep*1000).then(() => {
             gameLoop(gameBoard, pieceBoard);
         });
     } else {
-        console.log('GAME OVER');
+        sleep(1000).then(() => {
+            gameLoop(gameBoard, pieceBoard);
+        });
     }
 }
 
