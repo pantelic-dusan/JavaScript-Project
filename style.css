@@ -56,6 +56,20 @@ legend {
     letter-spacing: 3px;
 }
 
+label {
+    display: inline-block;
+    text-align: center;  
+}
+
+input[type="text"] {
+    background-color: transparent;
+    border: none;
+    color: #F2F2F2;
+    font-family: 'Minecraft';
+    font-size: 100%;
+    width: 30%;
+}
+
 .left-box {
     padding-left: 20%;
     padding-right: 5%;
@@ -79,11 +93,26 @@ legend {
 }
 
 .game-board-container {
+    display: flex;
     align-content: center;
+    justify-content: center;
 }
 
 .piece-board-container {
+    display: flex;
     align-content: center;
+    justify-content: center;
+}
+
+#game-menu {
+    height: 100%;
+    display: flex;
+    text-align: center;
+    align-content: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    line-height: 0%;
 }
 
 #game-board {

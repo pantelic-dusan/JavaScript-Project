@@ -1,7 +1,24 @@
 'use strict'
 
-window.onkeypress = function onKeyPress() {
+var isGameActive = false;
+var player = document.getElementById('player');
+var playerElement = document.getElementById('player-name');
+var gameMenu = document.getElementById('game-menu');
 
+window.onload = function onLoad() {
+    playerElement.value = 'GUEST';
+    gameMenu.style.display = 'flex';
+}
+
+window.onkeypress = function onKeyPress(event) {
+    if (!this.isGameActive) {
+        if (event.code == 'Space') {
+            player.innerHTML = 'PLAYER : ' + playerElement.value;
+            gameMenu.style.display = 'none';
+            isGameActive = true;
+            main();
+        }
+    }
 }
 
 function sleep(miliseconds) {
@@ -354,6 +371,7 @@ Board.prototype.init = function() {
         this.blockMatrix[i] = new Array(this.numOfColumns);
     }
     this.calculateBlockSize();
+    this.boardElement.style.display = 'grid'
     this.boardElement.style.gridTemplateColumns = 'repeat(' + this.numOfColumns + ', 1fr)';
     this.boardElement.style.gridTemplateRows = 'repeat(' + this.numOfRows + ', 1fr)';
     this.boardElement.style.width = this.blockSize * this.numOfColumns + 'px';
@@ -390,6 +408,16 @@ Board.prototype.drawEmptyBoard = function() {
         }
     }
 }
+
+Board.prototype.resetBoard = function() {
+    for(let i=0; i<this.numOfRows; i++) {
+        for(let j=0; j<this.numOfColumns; j++) {
+            let block = this.blockMatrix[i][j];
+            this.boardElement.removeChild(block.blockElement);
+        }
+    }
+}
+
 //  BOARD CLASS
 
 //  GAMEBOARD CLASS
@@ -615,6 +643,13 @@ PieceBoard.prototype.drawEmptyBoard = function() {
             node.style.color = this.color;
             node.style.opacity = this.opacity.toString();
             this.boardElement.appendChild(node);
+            let block = {
+                row: i,
+                column: j,
+                blockElement: node,
+                color: this.color
+            }
+            this.blockMatrix[i][j] = block;
         }
     }
 }
@@ -661,15 +696,26 @@ function gameLoop(gameBoard, pieceBoard) {
         sleep(timeSleep*1000).then(() => {
             gameLoop(gameBoard, pieceBoard);
         });
-    } else {
+    } else if (!gameBoard.gameEnd) {
         sleep(1000).then(() => {
             gameLoop(gameBoard, pieceBoard);
+        });
+    } else {
+        sleep(1000).then(() => {
+            gameBoard.resetBoard();
+            pieceBoard.resetBoard();
+            gameBoard.boardElement.style.display = 'none';
+            gameMenu.style.display = 'flex';
+            isGameActive = false;
         });
     }
 }
 
 
 function main() {
+    document.getElementById('level').innerHTML = 'LEVEL : 0';
+    document.getElementById('score').innerHTML = 'SCORE : 0';
+
     var gameBoardContainerElement = document.getElementById('game-board-container');
     var gameBoardElement = document.getElementById('game-board');
     var gameBoard = new GameBoard(gameBoardContainerElement, gameBoardElement, 16, 10);
@@ -684,4 +730,3 @@ function main() {
     gameLoop(gameBoard, pieceBoard);
 }
 
-main();

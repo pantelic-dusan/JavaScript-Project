@@ -18,7 +18,7 @@
             <fieldset class="stats-container">
                 <legend>STATS</legend>
                 <dv class="stats">
-                    <p>PLAYER : TEST</p>
+                    <p id='player'>PLAYER : GUEST</p>
                     <p id='score'>SCORE : 0</p>
                     <p id='level'>LEVEL : 0</p>
                 </dv>
@@ -45,6 +45,15 @@
             <!-- Main game contaier -->
             <fieldset id='game-board-container' class='game-container'>
                 <legend>GAME</legend>
+                <div id ='game-menu'>
+                    <label>
+                        PLAYER : 
+                        <input type="text" id='player-name'>
+                    </label>
+                    <p>|--------------------------------------------|</p>
+                    <p>| PRESS SPACE TO START GAME |</p>
+                    <p>|--------------------------------------------|</p>
+                </div>
                 <div id='game-board'>
 
                 </div>
