@@ -62,13 +62,24 @@
 
         <!-- Right part of body -->
         <div class='right-box'>
-            <!-- Container with display of next item in game -->
-            <fieldset id='piece-board-container' class='piece-board-container'>
-                <legend>NEXT</legend>
-                <div id='piece-board'>
 
-                </div>
-            </fieldset>
+            <div class='pieces-boards'>
+                <!-- Container with display of next item in game -->
+                <fieldset id='next-piece-board-container' class='piece-board-container'>
+                    <legend>NEXT</legend>
+                    <div id='next-piece-board'>
+
+                    </div>
+                </fieldset>
+
+                <!-- Container with display of hold item in game -->
+                <fieldset id='hold-piece-board-container' class='piece-board-container'>
+                    <legend>HOLD</legend>
+                    <div id='hold-piece-board'>
+
+                    </div>
+                </fieldset>
+            </div>
         
             <!-- Container with game instructions -->
             <fieldset class='help-container'>
@@ -80,6 +91,8 @@
                         <p>RIGHT --- MOVE RIGHT</p>
                         <p>KEY D --- ROTATE -90</p>
                         <p>KEY A --- ROTATE 90</p>
+                        <p>KEY W --- HOLD NEXT PIECE</p>
+                        <p>KEY S --- USE HOLD PIECE</p>
                     </div>
             </fieldset>
         </div>

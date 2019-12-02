@@ -22,7 +22,9 @@ window.onkeypress = function onKeyPress(event) {
 }
 
 function sleep(miliseconds) {
-    return new Promise(resolve => setTimeout(resolve, miliseconds));
+    return new Promise(function (resolve) {
+        setTimeout(resolve, miliseconds);
+    });
 }
 
 //  PIECE CLASS
@@ -55,19 +57,7 @@ Piece.prototype.movePieceDown = function() {
     }
     
     if(!this.isCoalisionDetected(lookaheadPosition, this.pieceMatrix)) {
-        // Deletes piece on previous position
-        for(let i=0; i<this.size; i++) {
-            for(let j=0; j<this.size; j++) {
-                if(this.pieceMatrix[i][j] == 1) {
-                    let row = this.position.row + i;
-                    let column = this.position.column + j;
-                    if(row >= 0) {
-                        let block = document.getElementById('block-' + row + '-' + column);
-                        block.style.color = this.gameBoard.color;
-                    }
-                }
-            }
-        }
+        this.earsePreviousPieceDrawing();
         this.position.row++;
 
         return true;
@@ -83,19 +73,7 @@ Piece.prototype.movePieceLeft = function() {
     }
     
     if(!this.isCoalisionDetected(lookaheadPosition, this.pieceMatrix)) {
-        // Deletes piece on previous position
-        for(let i=0; i<this.size; i++) {
-            for(let j=0; j<this.size; j++) {
-                if(this.pieceMatrix[i][j] == 1) {
-                    let row = this.position.row + i;
-                    let column = this.position.column + j;
-                    if(row >= 0) {
-                        let block = document.getElementById('block-' + row + '-' + column);
-                        block.style.color = this.gameBoard.color;
-                    }
-                }
-            }
-        }
+        this.earsePreviousPieceDrawing();
         this.position.column--;
 
         return true;
@@ -111,19 +89,7 @@ Piece.prototype.movePieceRight = function() {
     }
     
     if(!this.isCoalisionDetected(lookaheadPosition, this.pieceMatrix)) {
-        // Deletes piece on previous position
-        for(let i=0; i<this.size; i++) {
-            for(let j=0; j<this.size; j++) {
-                if(this.pieceMatrix[i][j] == 1) {
-                    let row = this.position.row + i;
-                    let column = this.position.column + j;
-                    if(row >= 0) {
-                        let block = document.getElementById('block-' + row + '-' + column);
-                        block.style.color = this.gameBoard.color;
-                    }
-                }
-            }
-        }
+        this.earsePreviousPieceDrawing();
         this.position.column++;
 
         return true;
@@ -149,20 +115,8 @@ Piece.prototype.rotatePieceClockwise = function() {
     }
     
     if(!this.isCoalisionDetected(this.position, lookaheadPieceMatrix)) {
-        // Deletes piece on previous position
-        for(let i=0; i<this.size; i++) {
-            for(let j=0; j<this.size; j++) {
-                if(this.pieceMatrix[i][j] == 1) {
-                    let row = this.position.row + i;
-                    let column = this.position.column + j;
-                    if(row >= 0) {
-                        let block = document.getElementById('block-' + row + '-' + column);
-                        block.style.color = this.gameBoard.color;
-                    }
-                }
-                this.pieceMatrix[i][j] = lookaheadPieceMatrix[i][j];
-            }
-        }
+        this.earsePreviousPieceDrawing();
+        this.changePieceMatrix(lookaheadPieceMatrix);
 
         return true;
     }
@@ -187,20 +141,8 @@ Piece.prototype.rotatePieceCounterClockwise = function() {
     }
     
     if(!this.isCoalisionDetected(this.position, lookaheadPieceMatrix)) {
-        // Deletes piece on previous position
-        for(let i=0; i<this.size; i++) {
-            for(let j=0; j<this.size; j++) {
-                if(this.pieceMatrix[i][j] == 1) {
-                    let row = this.position.row + i;
-                    let column = this.position.column + j;
-                    if(row >= 0) {
-                        let block = document.getElementById('block-' + row + '-' + column);
-                        block.style.color = this.gameBoard.color;
-                    }
-                }
-                this.pieceMatrix[i][j] = lookaheadPieceMatrix[i][j];
-            }
-        }
+        this.earsePreviousPieceDrawing();
+        this.changePieceMatrix(lookaheadPieceMatrix);
 
         return true;
     }
@@ -225,6 +167,45 @@ Piece.prototype.isCoalisionDetected = function(lookaheadPosition, lookaheadPiece
     }
     return false;
 }
+
+Piece.prototype.changePieceMatrix = function(matrix) {
+    for(let i=0; i<this.size; i++) {
+        for(let j=0; j<this.size; j++) {
+            this.pieceMatrix[i][j] = matrix[i][j];
+        }
+    }
+}
+
+Piece.prototype.drawPiece = function() {
+    for(let i=0; i<this.size; i++) {
+        for(let j=0; j<this.size; j++) {
+            if(this.pieceMatrix[i][j] == 1) {
+                let row = this.position.row + i;
+                let column = this.position.column + j;
+                if(row >= 0) {
+                    let block = document.getElementById('block-' + row + '-' + column);
+                    block.style.color = this.color;
+                }
+            }
+        }
+    }
+}
+
+Piece.prototype.earsePreviousPieceDrawing = function() {
+    for(let i=0; i<this.size; i++) {
+        for(let j=0; j<this.size; j++) {
+            if(this.pieceMatrix[i][j] == 1) {
+                let row = this.position.row + i;
+                let column = this.position.column + j;
+                if(row >= 0) {
+                    let block = document.getElementById('block-' + row + '-' + column);
+                    block.style.color = this.gameBoard.color;
+                }
+            }
+        }
+    }
+}
+
 //  PIECE CLASS
 
 //  IPIECE CLASS
@@ -382,7 +363,7 @@ Board.prototype.init = function() {
 Board.prototype.calculateBlockSize = function() {
     let maxWidth = this.boardContainerElement.offsetWidth;
     let maxHeight = this.boardContainerElement.offsetHeight;
-    this.blockSize = Math.floor(Math.min(maxHeight/(this.numOfRows+2), maxWidth/(this.numOfColumns+2)));
+    this.blockSize = Math.floor(Math.min(maxHeight/(this.numOfRows+1), maxWidth/(this.numOfColumns+1)));
     if(this.blockSize < 1) {
         this.blockSize = 1;
     }
@@ -425,6 +406,7 @@ function GameBoard(boardContainerElement, boardElement, numOfRows=1, numOfColumn
     Board.call(this, boardContainerElement, boardElement, numOfRows, numOfColumns);
     this.activePiece = null;
     this.nextPiece = null;
+    this.holdedPiece = null;
     this.gameEnd = false;
     this.paused = false;
     this.level = 0;
@@ -446,18 +428,7 @@ GameBoard.prototype.update = function() {
     }
 
     if (this.activePiece.movePieceDown()) {
-        for(let i=0; i<this.activePiece.size; i++) {
-            for(let j=0; j<this.activePiece.size; j++) {
-                if(this.activePiece.pieceMatrix[i][j] == 1) {
-                    let row = this.activePiece.position.row + i;
-                    let column = this.activePiece.position.column + j;
-                    if(row >= 0) {
-                        let block = document.getElementById('block-' + row + '-' + column);
-                        block.style.color = this.activePiece.color;
-                    }
-                }
-            }
-        }
+        this.activePiece.drawPiece();
     } else {
         for(let i=0; i<this.activePiece.size; i++) {
             for(let j=0; j<this.activePiece.size; j++) {
@@ -494,30 +465,53 @@ GameBoard.prototype.onKeyDown = function(event) {
             case 'ArrowLeft':
                 if(this.activePiece != null) {
                     this.activePiece.movePieceLeft();
+                    this.activePiece.drawPiece();
                 }
                 break;
             case 'ArrowRight':
                 if(this.activePiece != null) {
                     this.activePiece.movePieceRight();
+                    this.activePiece.drawPiece();
                 }
                 break;
             case 'ArrowDown':
                 if(this.activePiece != null) {
                     this.activePiece.movePieceDown();
+                    this.activePiece.drawPiece();
                 }
                 break;
             case 'd':
             case 'D':
                 if(this.activePiece != null) {
                     this.activePiece.rotatePieceClockwise();
+                    this.activePiece.drawPiece();
                 }
                 break;
             case 'a':
             case 'A':
                 if(this.activePiece != null) {
                     this.activePiece.rotatePieceCounterClockwise();
+                    this.activePiece.drawPiece();
                 }
                 break;
+            case 'w':
+            case 'W':
+                if (this.holdedPiece == null && this.activePiece != null) {
+                    this.holdedPiece = this.nextPiece;
+                    this.nextPiece = this.generateRandomPiece();
+                }
+                break;
+            case 's':
+            case 'S':
+                if (this.holdedPiece != null && this.activePiece != null) {
+                    this.activePiece.earsePreviousPieceDrawing();
+                    if (!this.holdedPiece.isCoalisionDetected(this.activePiece.position, this.holdedPiece.pieceMatrix)) {
+                        this.holdedPiece.position = this.activePiece.position;
+                        this.activePiece = this.holdedPiece;
+                        this.holdedPiece = null;
+                    }
+                    this.activePiece.drawPiece();
+                }
             default:
                 break;
         }
@@ -627,17 +621,18 @@ GameBoard.prototype.destroyFilledRows = function() {
 //  GAMEBOARD CLASS
 
 //  PIECEBOARD CLASS
-function PieceBoard(boardContainerElement, boardElement, numOfRows=1, numOfColumns=1) {
+function PieceBoard(boardContainerElement, boardElement, numOfRows=1, numOfColumns=1, pieceBoardType) {
     Board.call(this, boardContainerElement, boardElement, numOfRows, numOfColumns);
+    this.pieceBoardType = pieceBoardType;
 }
 
 PieceBoard.prototype = Object.create(Board.prototype);
 
 PieceBoard.prototype.drawEmptyBoard = function() {
-    for(let i=0; i<this.numOfColumns; i++) {
-        for(let j=0; j<this.numOfRows; j++) {
+    for(let i=0; i<this.numOfRows; i++) {
+        for(let j=0; j<this.numOfColumns; j++) {
             let node = document.createElement('i');
-            node.setAttribute('id', 'piece-block-' + i + '-' + j);
+            node.setAttribute('id', this.pieceBoardType + '-piece-block-' + i + '-' + j);
             node.setAttribute('class', 'fas fa-square');
             node.style.fontSize = this.blockSize.toString() + 'px';
             node.style.color = this.color;
@@ -654,16 +649,27 @@ PieceBoard.prototype.drawEmptyBoard = function() {
     }
 }
 
-PieceBoard.prototype.drawNextPiece = function(nextPiece) {
-    let n = nextPiece.pieceMatrix.length
-    for(let i=0; i<n; i++) {
-        for(let j=0; j<n; j++) {
-            let block = document.getElementById('piece-block-' + i + '-' + j);
-            if (nextPiece.pieceMatrix[i][j] == 1) {
-                block.style.color = nextPiece.color;
-                block.style.opacity = this.opacity;
+PieceBoard.prototype.drawPieceOnBoard = function(piece) {
+    let r = this.numOfRows;
+    let c = this.numOfColumns;
+    if (piece != null) {
+        for(let i=0; i<r; i++) {
+            for(let j=0; j<c; j++) {
+                let block = document.getElementById(this.pieceBoardType + '-piece-block-' + i + '-' + j);
+                if (piece.pieceMatrix[i][j] == 1) {
+                    block.style.color = piece.color;
+                    block.style.opacity = this.opacity;
+                }
+                else {
+                    block.style.color = this.color;
+                    block.style.opacity = 0;
+                }
             }
-            else {
+        }
+    } else {
+        for(let i=0; i<r; i++) {
+            for(let j=0; j<c; j++) {
+                let block = document.getElementById(this.pieceBoardType + '-piece-block-' + i + '-' + j);
                 block.style.color = this.color;
                 block.style.opacity = 0;
             }
@@ -673,10 +679,11 @@ PieceBoard.prototype.drawNextPiece = function(nextPiece) {
 //  PIECEBOARDCLASS
 
 
-function gameLoop(gameBoard, pieceBoard) {
+function gameLoop(gameBoard, nextPieceBoard, holdPieceBoard) {
     if(!gameBoard.gameEnd && !gameBoard.paused){
         gameBoard.update();
-        pieceBoard.drawNextPiece(gameBoard.nextPiece);
+        nextPieceBoard.drawPieceOnBoard(gameBoard.nextPiece);
+        holdPieceBoard.drawPieceOnBoard(gameBoard.holdedPiece);
 
         let timeSleep = 0;
         if (gameBoard.level < 10) {
@@ -694,16 +701,17 @@ function gameLoop(gameBoard, pieceBoard) {
         }
 
         sleep(timeSleep*1000).then(() => {
-            gameLoop(gameBoard, pieceBoard);
+            gameLoop(gameBoard, nextPieceBoard, holdPieceBoard);
         });
     } else if (!gameBoard.gameEnd) {
         sleep(1000).then(() => {
-            gameLoop(gameBoard, pieceBoard);
+            gameLoop(gameBoard, nextPieceBoard, holdPieceBoard);
         });
     } else {
-        sleep(1000).then(() => {
+        sleep(500).then(() => {
             gameBoard.resetBoard();
-            pieceBoard.resetBoard();
+            nextPieceBoard.resetBoard();
+            holdPieceBoard.resetBoard();
             gameBoard.boardElement.style.display = 'none';
             gameMenu.style.display = 'flex';
             isGameActive = false;
@@ -722,11 +730,20 @@ function main() {
     gameBoard.init();
     window.onkeydown = gameBoard.onKeyDown.bind(gameBoard);
 
-    var pieceBoardContainerElement = document.getElementById('piece-board-container');
-    var pieceBoardElement = document.getElementById('piece-board');
-    var pieceBoard = new PieceBoard(pieceBoardContainerElement, pieceBoardElement, 4, 4);
-    pieceBoard.init();
+    // Num of rows in piece board is 3 because in horizontal position piece is in first 3 rows of piece matrix
 
-    gameLoop(gameBoard, pieceBoard);
+    var nextPieceBoardContainerElement = document.getElementById('next-piece-board-container');
+    var nextPieceBoardElement = document.getElementById('next-piece-board');
+    var nextPieceBoard = new PieceBoard(nextPieceBoardContainerElement, nextPieceBoardElement, 3, 4, "next");
+    nextPieceBoard.init();
+
+    var holdPieceBoardContainerElement = document.getElementById('hold-piece-board-container');
+    var holdPieceBoardElement = document.getElementById('hold-piece-board');
+    var holdPieceBoard = new PieceBoard(holdPieceBoardContainerElement, holdPieceBoardElement, 3, 4, "hold");
+    holdPieceBoard.init();
+
+    gameLoop(gameBoard, nextPieceBoard, holdPieceBoard);
 }
+
+
 
