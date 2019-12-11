@@ -177,14 +177,16 @@ Piece.prototype.changePieceMatrix = function(matrix) {
 }
 
 Piece.prototype.drawPiece = function() {
-    for(let i=0; i<this.size; i++) {
-        for(let j=0; j<this.size; j++) {
-            if(this.pieceMatrix[i][j] == 1) {
-                let row = this.position.row + i;
-                let column = this.position.column + j;
-                if(row >= 0) {
-                    let block = document.getElementById('block-' + row + '-' + column);
-                    block.style.color = this.color;
+    if (isGameActive) {
+        for(let i=0; i<this.size; i++) {
+            for(let j=0; j<this.size; j++) {
+                if(this.pieceMatrix[i][j] == 1) {
+                    let row = this.position.row + i;
+                    let column = this.position.column + j;
+                    if(row >= 0) {
+                        let block = document.getElementById('block-' + row + '-' + column);
+                        block.style.color = this.color;
+                    }
                 }
             }
         }
@@ -700,15 +702,15 @@ function gameLoop(gameBoard, nextPieceBoard, holdPieceBoard) {
             timeSleep = 1/60;
         }
 
-        sleep(timeSleep*1000).then(() => {
+        sleep(timeSleep*1000).then(function loop() {
             gameLoop(gameBoard, nextPieceBoard, holdPieceBoard);
         });
     } else if (!gameBoard.gameEnd) {
-        sleep(1000).then(() => {
+        sleep(1000).then(function loop() {
             gameLoop(gameBoard, nextPieceBoard, holdPieceBoard);
         });
     } else {
-        sleep(500).then(() => {
+        sleep(500).then(function loop() {
             gameBoard.resetBoard();
             nextPieceBoard.resetBoard();
             holdPieceBoard.resetBoard();
