@@ -458,6 +458,10 @@ GameBoard.prototype.update = function() {
 // Problem with too long key press
 GameBoard.prototype.onKeyDown = function(event) {
 
+    if (!isGameActive) {
+        return;
+    }
+
     if (event.code == 'Space') {
         this.paused = !this.paused;
     }
