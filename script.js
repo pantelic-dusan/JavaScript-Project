@@ -1,25 +1,14 @@
 'use strict'
 
-var highScores = new Map([['1', ['Player_1', '0']], ['2', ['Player_2', '0']]
-                        , ['3', ['Player_3', '0']], ['4', ['Player_4', '0']]
-                        , ['5', ['Player_5', '0']], ['6', ['Player_6', '0']]
-                        , ['7', ['Player_7', '0']], ['8', ['Player_8', '0']]
-                    ]);
-
 var isGameActive = false;
 var player = document.getElementById('player');
 var playerElement = document.getElementById('player-name');
 var gameMenu = document.getElementById('game-menu');
 
 window.onload = function onLoad() {
-    playerElement.value = 'GUEST';
+    playerElement.value = 'Guest';
     gameMenu.style.display = 'flex';
-    highScores.forEach(function printHighScores(value, key, map) {
-        let score = value[1];
-        let playerName = value[0];
-        let highScoreElemnt = document.getElementById('highscore'+key);
-        highScoreElemnt.innerHTML = playerName + ' --- ' + score;
-    });
+    printHighScores();
 }
 
 window.onkeypress = function onKeyPress(event) {
@@ -696,24 +685,69 @@ class PieceBoard extends Board {
 
 //  PIECEBOARDCLASS
 
-function updateHighScores(newScore) {
-    var scoreImplaced = false;
-    var lastValue = [];
-    highScores.forEach(function printHighScores(value, key, map) {
-        let score = value[1];
-        if (!scoreImplaced && newScore >= score) {
-            lastValue = value;
-            map.set(key, [playerElement.value, newScore]);
-            scoreImplaced = true;
-        }
-        else if (scoreImplaced) {
-            let tmpValue = value;
-            map.set(key, lastValue);
-            lastValue = tmpValue;
-        }
-        let highScoreElemnt = document.getElementById('highscore'+key);
-        highScoreElemnt.innerHTML = map.get(key)[0] + ' --- ' + score;
+function printHighScores() {
+    getHighScores().then((result) => {
+        console.log(result);
+        result.forEach((element, index) => {
+            let score = element['score'];
+            let playerName = element['username'];
+            let highScoreElemnt = document.getElementById('highscore' + (index+1));
+            highScoreElemnt.innerHTML = playerName + ' --- ' + score;
+        })
+    }).catch((error) => {
+        console.log(error);
     });
+}
+
+function getHighScores() {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: 'http://localhost:8000/scores',
+            method: 'GET',
+            success: function(result) {
+                let numOfScores = 8;
+                let len = result.length;
+                if (len >= numOfScores) {
+                    // Cuts first numOfScores scores
+                    resolve(result.slice(0,numOfScores))
+                } else {
+                    // Fills scores with last score till numOfScores size
+                    resolve(result.concat(
+                        Array.from({length: numOfScores-len}, () => result[len-1])
+                    ));
+                }
+                
+            },
+            error: function(error) {
+                reject(error);
+            }
+        });
+    });
+}
+
+function updateHighScores(newScore) {
+    new Promise((resolve, reject) => {
+        $.ajax({
+            url: 'http://localhost:8000/scores',
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            data: {
+                username: playerElement.value,
+                score: newScore
+            },
+            success: function(result) {
+                resolve(result);
+            },
+            error: function(error) {
+                reject(error);
+            }
+        });
+    }).then((result) => {
+        console.log(result)
+        printHighScores();
+    }).catch((error) => {
+        console.log(error);
+    })
 }
 
 function gameLoop(gameBoard, nextPieceBoard, holdPieceBoard) {
